@@ -126,7 +126,9 @@ git checkout -b upstream/$TEMP_BRANCH upstream/$TARGET_BRANCH
 for sha in $COMMIT_SHA_VALUES; do
 	echo $sha
 	git cherry-pick -xs $sha &> /tmp/error.log || (
-		gh pr comment $PR_NUMBER --body "‼️ Error during cherry-pick.<br/><br/>$(cat /tmp/error.log)"
+		git cherry-pick --abort
+		git push upstream upstream/$TEMP_BRANCH:$TEMP_BRANCH
+		gh pr comment $PR_NUMBER --body "‼️ Error during cherry-pick. Your cherry-pick progress was saved at: https://github.com/$REPO_NAME/tree/$TEMP_BRANCH <br/><br/>$(cat /tmp/error.log)"
 		exit 1
 	)
 done
