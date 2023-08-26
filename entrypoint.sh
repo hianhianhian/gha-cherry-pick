@@ -42,12 +42,12 @@ MERGED=""
 MERGE_COMMIT=""
 pr_resp=""
 commits=""
-PR_REVIEWERS=""
+reviewers=""
 
 for ((i = 0 ; i < $MAX_RETRIES ; i++)); do
 	pr_resp=$(gh api "${URI}/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
 	commits=$(gh api "${URI}/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=200")
- 	PR_REVIEWERS=$(echo "$pr_resp" | jq -r .requested_reviewers)
+ 	reviewers=$(echo "$pr_resp" | jq -r .requested_reviewers)
 	MERGED=$(echo "$pr_resp" | jq -r .merged)
 	MERGE_COMMIT=$(echo "$pr_resp" | jq -r .merge_commit_sha)
 	if [[ "$MERGED" == "null" ]]; then
@@ -63,7 +63,8 @@ done
 COMMIT_SHA_VALUES=$(echo "$commits" | jq -r '.[] | select(.commit.message | contains("Merge") | not) | .sha')
 echo $COMMIT_SHA_VALUES
 
-#get requested reviewers from the PR
+#get requested reviewer names from the PR
+PR_REVIEWERS=$(echo "$reviwers" | jq -r '.[] | .login')
 echo "Reviewers: $PR_REVIEWERS"
 
 # See https://github.com/actions/checkout/issues/766 for motivation.
