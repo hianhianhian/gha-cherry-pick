@@ -12,10 +12,8 @@ trap onerror ERR
 
 if [ -z "$PR_NUMBER" ]; then
 	PR_NUMBER=$(jq -r ".pull_request.number" "$GITHUB_EVENT_PATH")
- 	echo "pull_request.number #$PR_NUMBER"
 	if [[ "$PR_NUMBER" == "null" ]]; then
 		PR_NUMBER=$(jq -r ".issue.number" "$GITHUB_EVENT_PATH")
-  		echo "issue.number #$PR_NUMBER"
 	fi
 	if [[ "$PR_NUMBER" == "null" ]]; then
 		echo "Failed to determine PR Number."
@@ -26,8 +24,6 @@ fi
 COMMENT_BODY=$(jq -r ".comment.body" "$GITHUB_EVENT_PATH")
 PR_TITLE=$(jq -r ".issue.title" "$GITHUB_EVENT_PATH")
 PR_BODY=$(jq -r ".issue.body" "$GITHUB_EVENT_PATH")
-PR_REVIEWERS=$(jq -r ".pull_request.requested_reviewers" "$GITHUB_EVENT_PATH")
-echo "Reviewers: $PR_REVIEWERS"
 
 echo "Collecting information about PR #$PR_NUMBER of $GITHUB_REPOSITORY..."
 
@@ -46,10 +42,12 @@ MERGED=""
 MERGE_COMMIT=""
 pr_resp=""
 commits=""
+PR_REVIEWERS=""
 
 for ((i = 0 ; i < $MAX_RETRIES ; i++)); do
 	pr_resp=$(gh api "${URI}/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
 	commits=$(gh api "${URI}/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=200")
+ 	PR_REVIEWERS=$(echo "$pr_resp" | jq -r .requested_reviewers)
 	MERGED=$(echo "$pr_resp" | jq -r .merged)
 	MERGE_COMMIT=$(echo "$pr_resp" | jq -r .merge_commit_sha)
 	if [[ "$MERGED" == "null" ]]; then
@@ -64,6 +62,9 @@ done
 # get all commit shas except merge commits
 COMMIT_SHA_VALUES=$(echo "$commits" | jq -r '.[] | select(.commit.message | contains("Merge") | not) | .sha')
 echo $COMMIT_SHA_VALUES
+
+#get requested reviewers from the PR
+echo "Reviewers: $PR_REVIEWERS"
 
 # See https://github.com/actions/checkout/issues/766 for motivation.
 git config --global --add safe.directory /github/workspace
