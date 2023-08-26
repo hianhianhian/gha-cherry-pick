@@ -12,8 +12,10 @@ trap onerror ERR
 
 if [ -z "$PR_NUMBER" ]; then
 	PR_NUMBER=$(jq -r ".pull_request.number" "$GITHUB_EVENT_PATH")
+ 	echo "pull_request.number #$PR_NUMBER"
 	if [[ "$PR_NUMBER" == "null" ]]; then
 		PR_NUMBER=$(jq -r ".issue.number" "$GITHUB_EVENT_PATH")
+  		echo "issue.number #$PR_NUMBER"
 	fi
 	if [[ "$PR_NUMBER" == "null" ]]; then
 		echo "Failed to determine PR Number."
