@@ -25,7 +25,7 @@ COMMENT_BODY=$(jq -r ".comment.body" "$GITHUB_EVENT_PATH")
 PR_TITLE=$(jq -r ".issue.title" "$GITHUB_EVENT_PATH")
 PR_BODY=$(jq -r ".issue.body" "$GITHUB_EVENT_PATH")
 PR_REVIEWERS=$(jq -r ".pull_request.requested_reviewers" "$GITHUB_EVENT_PATH")
-echo $PR_REVIEWERS
+echo "Reviewers: $PR_REVIEWERS"
 
 echo "Collecting information about PR #$PR_NUMBER of $GITHUB_REPOSITORY..."
 
