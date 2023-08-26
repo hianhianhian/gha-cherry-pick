@@ -24,6 +24,8 @@ fi
 COMMENT_BODY=$(jq -r ".comment.body" "$GITHUB_EVENT_PATH")
 PR_TITLE=$(jq -r ".issue.title" "$GITHUB_EVENT_PATH")
 PR_BODY=$(jq -r ".issue.body" "$GITHUB_EVENT_PATH")
+PR_REVIEWERS=$(jq -r ".pull_request.requested_reviewers" "$GITHUB_EVENT_PATH")
+echo $PR_REVIEWERS
 
 echo "Collecting information about PR #$PR_NUMBER of $GITHUB_REPOSITORY..."
 
@@ -137,7 +139,7 @@ git push upstream upstream/$TEMP_BRANCH:$TEMP_BRANCH &> /tmp/error.log || (
 	exit 1
 )
 
-cherry_pr_url=$(gh pr create --base $TARGET_BRANCH --head $TEMP_BRANCH --title "$PR_TITLE" --body "$PR_BODY" 2> /tmp/error.log || {
+cherry_pr_url=$(gh pr create --base $TARGET_BRANCH --head $TEMP_BRANCH --title "$PR_TITLE" --body "$PR_BODY" --reviewer "$PR_REVIEWERS" 2> /tmp/error.log || {
 	gh pr comment $PR_NUMBER --body "‼️ Error during PR creation.<br/><br/>$(cat /tmp/error.log)"
 	exit 1
 })
