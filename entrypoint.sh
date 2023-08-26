@@ -64,7 +64,7 @@ COMMIT_SHA_VALUES=$(echo "$commits" | jq -r '.[] | select(.commit.message | cont
 echo $COMMIT_SHA_VALUES
 
 #get requested reviewer names from the PR
-PR_REVIEWERS=$(echo "$reviwers" | jq -r '.[] | .login')
+PR_REVIEWERS=$(echo "$reviwers" | jq -r '[.[] | .login] | join(",")')
 echo "Reviewers: $PR_REVIEWERS"
 
 # See https://github.com/actions/checkout/issues/766 for motivation.
